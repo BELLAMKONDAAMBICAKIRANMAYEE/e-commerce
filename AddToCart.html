@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add to Cart</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom CSS */
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+            padding: 20px;
+            margin-top: 50px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #333333;
+            text-align: center;
+        }
+
+        .form-label {
+            font-weight: bold;
+            color: #555555;
+        }
+
+        .form-control {
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #cccccc;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-weight: bold;
+            color:white;
+            border:none;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+        .img-preview {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 576px) {
+            .container {
+                padding: 15px;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .btn-primary {
+                width: 100%;
+            }
+        }
+        .mb-3{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-evenly;
+        }
+        input{
+            width:50%;
+        }
+    </style>
+</head>
+<body>
+  <center>
+    <div class="container">
+        <h2>Add to Cart</h2>
+        <form id="addToCartForm">
+            <div class="mb-3">
+                <label for="productName" class="form-label">Product Name</label>
+                <input type="text" class="form-control" id="productName" required>
+            </div>
+            <div class="mb-3">
+                <label for="productPrice" class="form-label">Product Price</label>
+                <input type="number" class="form-control" id="productPrice" required>
+            </div>
+            <div class="mb-3">
+                <label for="productImage" class="form-label">Product Image URL</label>
+                <input type="url" class="form-control" id="productImage"style="margin-left: -4.5%;" required>
+                <img id="imgPreview" class="img-preview" src="" alt="Product Image Preview" style="display: none;">
+            </div>
+            <div class="mb-3">
+                <label for="productQuantity" class="form-label">Product Quantity</label>
+                <input type="number" class="form-control" id="productQuantity" min="1" value="1" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add to Cart</button>
+        </form>
+    </div>
+  </center>
+
+    <!-- Bootstrap JS and Dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.2/js/bootstrap.min.js"></script>
+    <script>
+        document.getElementById('productImage').addEventListener('input', function(event) {
+            const imgPreview = document.getElementById('imgPreview');
+            const url = event.target.value;
+            if (url) {
+                imgPreview.src = url;
+                imgPreview.style.display = 'block';
+            } else {
+                imgPreview.style.display = 'none';
+            }
+        });
+
+        document.getElementById('addToCartForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const productName = document.getElementById('productName').value;
+            const productPrice = document.getElementById('productPrice').value;
+            const productImage = document.getElementById('productImage').value;
+            const productQuantity = document.getElementById('productQuantity').value;
+
+            // Example API URL (replace with your actual endpoint)
+            const apiUrl = 'https://example.com/api/cart/add';
+
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: productName,
+                    price: parseFloat(productPrice),
+                    image: productImage,
+                    quantity: parseInt(productQuantity, 10)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Product added to cart successfully');
+                    // Optionally, reset the form or redirect to another page
+                    document.getElementById('addToCartForm').reset();
+                    document.getElementById('imgPreview').style.display = 'none';
+                } else {
+                    alert('Error adding product to cart');
+                }
+            })
+            .catch(error => {
+                console.error('Error adding product to cart:', error);
+                alert('Error adding product to cart');
+            });
+        });
+    </script>
+</body>
+</html>

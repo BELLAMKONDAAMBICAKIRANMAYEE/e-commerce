@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products List</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom CSS */
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .product-card {
+            border: 1px solid #cccccc;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            background-color: #ffffff;
+        }
+
+        .product-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        .btn-add-to-cart {
+            background-color: #007bff;
+            border-color: #007bff;
+            border-radius: 5px;
+            color: #ffffff;
+            padding: 10px 20px;
+            font-weight: bold;
+        }
+
+        .btn-add-to-cart:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+        .btn-add-product {
+            background-color: #28a745;
+            border-color: #28a745;
+            border-radius: 5px;
+            color: #ffffff;
+            padding: 10px 20px;
+            font-weight: bold;
+        }
+
+        .btn-add-product:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+        #productName,#productPrice,#productImage{
+            padding:6px;
+            border-radius:5px;
+            border:0.7px solid grey;
+        }
+        .mb-3{
+            display: flex;
+            justify-content: space-evenly;
+            max-width: 400px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+           
+        }
+    </style>
+</head>
+<body>
+   <center>
+    <div class="container">
+        <h2 class="text-center">Products List</h2>
+        <div id="productsList" class="row"></div>
+        <div id="adminControls" style="display: none;">
+            <h3>Add New Product</h3>
+            <form id="addProductForm">
+                <div class="mb-3">
+                    <label for="productName" class="form-label">Product Name</label>
+                    <input type="text" class="form-control" id="productName" required>
+                </div>
+                <div class="mb-3">
+                    <label for="productPrice" class="form-label">Product Price</label>
+                    <input type="number" class="form-control" id="productPrice" required>
+                </div>
+                <div class="mb-3">
+                    <label for="productImage" class="form-label">Product Image URL</label>
+                    <input type="file" class="form-control" id="productImage" style="margin-left: -8%;" required>
+                </div><br/>
+                <button type="submit" class="btn btn-add-product">Add Product</button>
+            </form>
+        </div>
+    </div>
+   </center>
+
+    <!-- Bootstrap JS and Dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.2/js/bootstrap.min.js"></script>
+    <!-- JWT handling with fetch API -->
+    <script>
+        const apiUrl = 'https://example.com/api/products'; // Replace with your actual API endpoint
+        const addProductUrl = 'https://example.com/api/products/add'; // Replace with your actual API endpoint
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('jwtToken');
+            if (token) {
+                // Verify JWT token and fetch user role
+                fetch('https://example.com/api/verifyToken', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.role === 'Admin') {
+                        document.getElementById('adminControls').style.display = 'block';
+                    }
+                })
+                .catch(error => console.error('Error verifying token:', error));
+            }
+
+            // Fetch and display products
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(products => {
+                    const productsList = document.getElementById('productsList');
+                    products.forEach(product => {
+                        const productCard = `
+                            <div class="col-md-4">
+                                <div class="product-card">
+                                    <img src="${product.image}" alt="${product.name}" class="product-image">
+                                    <h5>${product.name}</h5>
+                                    <p>$${product.price.toFixed(2)}</p>
+                                    <button class="btn btn-add-to-cart" onclick="addToCart('${product.id}')">Add to Cart</button>
+                                </div>
+                            </div>
+                        `;
+                        productsList.innerHTML += productCard;
+                    });
+                })
+                .catch(error => console.error('Error fetching products:', error));
+
+            // Handle add product form submission
+            document.getElementById('addProductForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const productName = document.getElementById('productName').value;
+                const productPrice = document.getElementById('productPrice').value;
+                const productImage = document.getElementById('productImage').value;
+
+                fetch(addProductUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        name: productName,
+                        price: parseFloat(productPrice),
+                        image: productImage
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Product added successfully');
+                        location.reload(); // Refresh the page to update the product list
+                    } else {
+                        alert('Error adding product');
+                    }
+                })
+                .catch(error => console.error('Error adding product:', error));
+            });
+        });
+
+        function addToCart(productId) {
+            // Implement add to cart functionality
+            console.log(`Added product ${productId} to cart`);
+        }
+    </script>
+</body>
+</html>
